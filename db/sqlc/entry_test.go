@@ -8,11 +8,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomEntry(t *testing.T, acc Account) Entry {
+func createRandomEntry(t *testing.T, account Account) Entry {
 	t.Helper()
 
 	arg := CreateEntryParams{
-		AccountID: acc.ID,
+		AccountID: account.ID,
 		Amount:    util.RandomMoney(),
 	}
 
@@ -30,13 +30,13 @@ func createRandomEntry(t *testing.T, acc Account) Entry {
 }
 
 func TestCreateEntry(t *testing.T) {
-	acc := createRandomAccount(t)
-	createRandomEntry(t, acc)
+	account := createRandomAccount(t)
+	createRandomEntry(t, account)
 }
 
 func TestGetEntry(t *testing.T) {
-	acc := createRandomAccount(t)
-	entry1 := createRandomEntry(t, acc)
+	account := createRandomAccount(t)
+	entry1 := createRandomEntry(t, account)
 
 	entry2, err := testQueries.GetEntry(context.Background(), entry1.ID)
 	require.NoError(t, err)
@@ -49,13 +49,13 @@ func TestGetEntry(t *testing.T) {
 }
 
 func TestListEntries(t *testing.T) {
-	acc := createRandomAccount(t)
+	account := createRandomAccount(t)
 	for i := 0; i < 10; i++ {
-		createRandomEntry(t, acc)
+		createRandomEntry(t, account)
 	}
 
 	arg := ListEntriesParams{
-		AccountID: acc.ID,
+		AccountID: account.ID,
 		Limit:     5,
 		Offset:    5,
 	}

@@ -8,12 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomTransfer(t *testing.T, acc1, acc2 Account) Transfer {
+func createRandomTransfer(t *testing.T, account1, account2 Account) Transfer {
 	t.Helper()
 
 	arg := CreateTransferParams{
-		FromAccountID: acc1.ID,
-		ToAccountID:   acc2.ID,
+		FromAccountID: account1.ID,
+		ToAccountID:   account2.ID,
 		Amount:        util.RandomMoney(),
 	}
 
@@ -32,15 +32,15 @@ func createRandomTransfer(t *testing.T, acc1, acc2 Account) Transfer {
 }
 
 func TestCreateTransfer(t *testing.T) {
-	acc1 := createRandomAccount(t)
-	acc2 := createRandomAccount(t)
-	createRandomTransfer(t, acc1, acc2)
+	account1 := createRandomAccount(t)
+	account2 := createRandomAccount(t)
+	createRandomTransfer(t, account1, account2)
 }
 
 func TestGetTranfser(t *testing.T) {
-	acc1 := createRandomAccount(t)
-	acc2 := createRandomAccount(t)
-	transfer1 := createRandomTransfer(t, acc1, acc2)
+	account1 := createRandomAccount(t)
+	account2 := createRandomAccount(t)
+	transfer1 := createRandomTransfer(t, account1, account2)
 
 	transfer2, err := testQueries.GetTransfer(context.Background(), transfer1.ID)
 	require.NoError(t, err)

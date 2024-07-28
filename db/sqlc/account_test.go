@@ -18,18 +18,18 @@ func createRandomAccount(t *testing.T) Account {
 		Currency: util.RandomCurrency(),
 	}
 
-	acc, err := testQueries.CreateAccount(context.Background(), arg)
+	account, err := testQueries.CreateAccount(context.Background(), arg)
 	require.NoError(t, err)
-	require.NotEmpty(t, acc)
+	require.NotEmpty(t, account)
 
-	require.Equal(t, arg.Owner, acc.Owner)
-	require.Equal(t, arg.Balance, acc.Balance)
-	require.Equal(t, arg.Currency, acc.Currency)
+	require.Equal(t, arg.Owner, account.Owner)
+	require.Equal(t, arg.Balance, account.Balance)
+	require.Equal(t, arg.Currency, account.Currency)
 
-	require.NotZero(t, acc.ID)
-	require.NotZero(t, acc.CreatedAt)
+	require.NotZero(t, account.ID)
+	require.NotZero(t, account.CreatedAt)
 
-	return acc
+	return account
 }
 
 func TestCreateAccount(t *testing.T) {
@@ -37,46 +37,46 @@ func TestCreateAccount(t *testing.T) {
 }
 
 func TestGetAccount(t *testing.T) {
-	acc1 := createRandomAccount(t)
-	acc2, err := testQueries.GetAccount(context.Background(), acc1.ID)
+	account1 := createRandomAccount(t)
+	account2, err := testQueries.GetAccount(context.Background(), account1.ID)
 	require.NoError(t, err)
-	require.NotEmpty(t, acc2)
+	require.NotEmpty(t, account2)
 
-	require.Equal(t, acc1.ID, acc2.ID)
-	require.Equal(t, acc1.Owner, acc2.Owner)
-	require.Equal(t, acc1.Balance, acc2.Balance)
-	require.Equal(t, acc1.Currency, acc2.Currency)
-	require.Equal(t, acc1.CreatedAt, acc2.CreatedAt)
+	require.Equal(t, account1.ID, account2.ID)
+	require.Equal(t, account1.Owner, account2.Owner)
+	require.Equal(t, account1.Balance, account2.Balance)
+	require.Equal(t, account1.Currency, account2.Currency)
+	require.Equal(t, account1.CreatedAt, account2.CreatedAt)
 }
 
 func TestUpdateAccount(t *testing.T) {
-	acc1 := createRandomAccount(t)
+	account1 := createRandomAccount(t)
 
 	arg := UpdateAccountParams{
-		ID:      acc1.ID,
+		ID:      account1.ID,
 		Balance: util.RandomMoney(),
 	}
 
-	acc2, err := testQueries.UpdateAccount(context.Background(), arg)
+	account2, err := testQueries.UpdateAccount(context.Background(), arg)
 	require.NoError(t, err)
-	require.NotEmpty(t, acc2)
+	require.NotEmpty(t, account2)
 
-	require.Equal(t, acc1.ID, acc2.ID)
-	require.Equal(t, acc1.Owner, acc2.Owner)
-	require.Equal(t, arg.Balance, acc2.Balance)
-	require.Equal(t, acc1.Currency, acc2.Currency)
-	require.Equal(t, acc1.CreatedAt, acc2.CreatedAt)
+	require.Equal(t, account1.ID, account2.ID)
+	require.Equal(t, account1.Owner, account2.Owner)
+	require.Equal(t, arg.Balance, account2.Balance)
+	require.Equal(t, account1.Currency, account2.Currency)
+	require.Equal(t, account1.CreatedAt, account2.CreatedAt)
 }
 
 func TestDeleteAccount(t *testing.T) {
-	acc1 := createRandomAccount(t)
-	err := testQueries.DeleteAccount(context.Background(), acc1.ID)
+	account1 := createRandomAccount(t)
+	err := testQueries.DeleteAccount(context.Background(), account1.ID)
 	require.NoError(t, err)
 
-	acc2, err := testQueries.GetAccount(context.Background(), acc1.ID)
+	account2, err := testQueries.GetAccount(context.Background(), account1.ID)
 	require.Error(t, err)
 	require.EqualError(t, err, sql.ErrNoRows.Error())
-	require.Empty(t, acc2)
+	require.Empty(t, account2)
 }
 
 func TestListAccounts(t *testing.T) {

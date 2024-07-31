@@ -7,16 +7,16 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/nochzato/go-bank/api"
 	db "github.com/nochzato/go-bank/db/sqlc"
-)
-
-const (
-	dbDriver      = "postgres"
-	dbSource      = "postgresql://postgres:postgres@localhost:5432/go_bank?sslmode=disable"
-	serverAddress = "localhost:8000"
+	"github.com/nochzato/go-bank/util"
 )
 
 func main() {
-	conn, err := sql.Open(dbDriver, dbSource)
+	config, err := util.LoadConfig(".")
+	if err != nil {
+		log.Fatalf("cannot read config file: %v", err)
+	}
+
+	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
 		log.Fatalf("cannot connect to the db: %v", err)
 	}
@@ -24,7 +24,7 @@ func main() {
 	store := db.NewStore(conn)
 	server := api.NewServer(store)
 
-	err = server.Start(serverAddress)
+	err = server.Start(config.ServerAddress)
 	if err != nil {
 		log.Fatalf("cannot start server: %v", err)
 	}

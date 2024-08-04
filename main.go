@@ -3,9 +3,12 @@ package main
 import (
 	"context"
 	"database/sql"
-	"log"
 	"net"
 	"net/http"
+	"os"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -25,12 +28,16 @@ import (
 func main() {
 	config, err := util.LoadConfig(".")
 	if err != nil {
-		log.Fatalf("cannot read config file: %s", err)
+		log.Fatal().Err(err).Msg("cannot read config file")
+	}
+
+	if config.Environment == "dev" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
 	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
-		log.Fatalf("cannot connect to the db: %s", err)
+		log.Fatal().Err(err).Msg("cannot connect to the db")
 	}
 
 	runDBMigration(config.MigrationURL, config.DBSource)
@@ -43,54 +50,55 @@ func main() {
 func runDBMigration(migrationURL string, dbSource string) {
 	migration, err := migrate.New(migrationURL, dbSource)
 	if err != nil {
-		log.Fatalf("cannot create migration: %s", err)
+		log.Fatal().Err(err).Msg("cannot create migration")
 	}
 
 	if err = migration.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatalf("failed to run migrate up: %s", err)
+		log.Fatal().Err(err).Msg("cannot create migration")
 	}
 
-	log.Println("db migrated successfully")
+	log.Info().Msg("db migrated successfully")
 }
 
 func runGinServer(config util.Config, store db.Store) {
 	server, err := api.NewServer(config, store)
 	if err != nil {
-		log.Fatalf("cannot create server: %s", err)
+		log.Fatal().Err(err).Msg("cannot create http server")
 	}
 
 	err = server.Start(config.HTTPServerAddress)
 	if err != nil {
-		log.Fatalf("cannot start server: %s", err)
+		log.Fatal().Err(err).Msg("cannot start server")
 	}
 }
 
 func runGrpcServer(config util.Config, store db.Store) {
 	server, err := gapi.NewServer(config, store)
 	if err != nil {
-		log.Fatalf("cannot create server: %s", err)
+		log.Fatal().Err(err).Msg("cannot create grpc server")
 	}
 
-	grpcServer := grpc.NewServer()
+	grpcLogger := grpc.UnaryInterceptor(gapi.GrpcLogger)
+	grpcServer := grpc.NewServer(grpcLogger)
 	pb.RegisterGoBankServer(grpcServer, server)
 	reflection.Register(grpcServer)
 
 	listener, err := net.Listen("tcp", config.GRPCServerAddress)
 	if err != nil {
-		log.Fatalf("cannot create listener: %s", err)
+		log.Fatal().Err(err).Msg("cannot create grpc listener")
 	}
 
-	log.Printf("start gRPC server at %s", listener.Addr().String())
+	log.Info().Msgf("start grpc server at %s", listener.Addr().String())
 	err = grpcServer.Serve(listener)
 	if err != nil {
-		log.Fatalf("cannot start gRPC server: %s", err)
+		log.Fatal().Err(err).Msg("cannot start grpc server")
 	}
 }
 
 func runGatewayServer(config util.Config, store db.Store) {
 	server, err := gapi.NewServer(config, store)
 	if err != nil {
-		log.Fatalf("cannot create server: %s", err)
+		log.Fatal().Err(err).Msg("cannot create grpc gateway server")
 	}
 
 	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
@@ -108,7 +116,7 @@ func runGatewayServer(config util.Config, store db.Store) {
 
 	err = pb.RegisterGoBankHandlerServer(ctx, grpcMux, server)
 	if err != nil {
-		log.Fatalf("cannot register handler server: %s", err)
+		log.Fatal().Err(err).Msg("cannot register handler server")
 	}
 
 	mux := http.NewServeMux()
@@ -116,12 +124,13 @@ func runGatewayServer(config util.Config, store db.Store) {
 
 	listener, err := net.Listen("tcp", config.HTTPServerAddress)
 	if err != nil {
-		log.Fatalf("cannot create listener: %s", err)
+		log.Fatal().Err(err).Msg("cannot craete http listener")
 	}
 
-	log.Printf("start HTTP gateway server at %s", listener.Addr().String())
-	err = http.Serve(listener, mux)
+	log.Info().Msgf("start HTTP gateway server at %s", listener.Addr().String())
+	handler := gapi.HttpLogger(mux)
+	err = http.Serve(listener, handler)
 	if err != nil {
-		log.Fatalf("cannot start HTTP gateway server: %s", err)
+		log.Fatal().Err(err).Msg("cannot start http gateway server")
 	}
 }

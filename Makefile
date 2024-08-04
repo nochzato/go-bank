@@ -1,5 +1,5 @@
 postgres:
-	docker run --name go-bank-db -p 5432:5432 -e POSTGRES_PASSWORD=postgres -d postgres:alpine
+	docker run --name go-bank-db -p 5432:5432 -e POSTGRES_PASSWORD=postgres -d postgres:16-alpine
 
 createdb:
 	docker exec -it go-bank-db createdb --username=postgres --owner=postgres go_bank

@@ -1,10 +1,8 @@
 syntax = "proto3";
-
 package pb;
+option go_package = "github.com/nochzato/go-bank/pb";
 
 import "google/protobuf/timestamp.proto";
-
-option go_package = "github.com/nochzato/go-bank/pb";
 
 message User {
 	string username = 1;

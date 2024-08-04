@@ -1,10 +1,8 @@
 syntax = "proto3";
-
 package pb;
+option go_package = "github.com/nochzato/go-bank/pb";
 
 import "user.proto";
-
-option go_package = "github.com/nochzato/go-bank/pb";
 
 message CreateUserRequest {
 	string username = 1;

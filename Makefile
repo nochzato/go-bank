@@ -40,4 +40,7 @@ proto:
 	--openapiv2_out=doc/swagger --openapiv2_opt=allow_merge=true,merge_file_name=go_bank \
 	proto/*.proto
 
-.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc server mock proto
+redis:
+	docker run --name redis -p 6379:6379 -d redis:7-alpine
+
+.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc server mock proto redis

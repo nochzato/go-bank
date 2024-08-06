@@ -30,6 +30,7 @@ server:
 
 mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/nochzato/go-bank/db/sqlc Store
+	mockgen -package mockwk -destination worker/mock/distibutor.go github.com/nochzato/go-bank/worker TaskDistributor
 
 proto:
 	rm -f pb/*.go

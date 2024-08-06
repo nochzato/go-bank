@@ -2,8 +2,8 @@ package gapi
 
 import (
 	"context"
-	"database/sql"
 
+	"github.com/jackc/pgx/v5"
 	db "github.com/nochzato/go-bank/db/sqlc"
 	"github.com/nochzato/go-bank/pb"
 	"github.com/nochzato/go-bank/util"
@@ -22,7 +22,7 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 
 	user, err := server.store.GetUser(ctx, req.Username)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if err == pgx.ErrNoRows {
 			return nil, status.Errorf(codes.NotFound, "user not found")
 		}
 		return nil, status.Errorf(codes.Internal, "failed to get the user: %s", err)

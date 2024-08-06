@@ -1,12 +1,11 @@
 package api
 
 import (
-	"database/sql"
 	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v5"
 	db "github.com/nochzato/go-bank/db/sqlc"
 	"github.com/nochzato/go-bank/token"
 )
@@ -31,12 +30,10 @@ func (server *Server) createAccount(ctx *gin.Context) {
 
 	account, err := server.store.CreateAccount(ctx, arg)
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			switch pqErr.Code.Name() {
-			case "foreign_key_violation", "unique_violation":
-				ctx.JSON(http.StatusForbidden, errorResponse(err))
-				return
-			}
+		errCode := db.ErrorCode(err)
+		if errCode == db.ForeignKeyViolation || errCode == db.UniqueViolation {
+			ctx.JSON(http.StatusForbidden, errorResponse(err))
+			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -58,7 +55,7 @@ func (server *Server) getAccount(ctx *gin.Context) {
 
 	account, err := server.store.GetAccount(ctx, req.ID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if err == pgx.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -77,8 +74,8 @@ func (server *Server) getAccount(ctx *gin.Context) {
 }
 
 type listAccountRequest struct {
-	PageID   int64 `form:"page_id" binding:"required,min=1"`
-	PageSize int64 `form:"page_size" binding:"required,min=5,max=10"`
+	PageID   int32 `form:"page_id" binding:"required,min=1"`
+	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
 }
 
 func (server *Server) listAccount(ctx *gin.Context) {

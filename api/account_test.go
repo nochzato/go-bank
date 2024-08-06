@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	mockdb "github.com/nochzato/go-bank/db/mock"
 	db "github.com/nochzato/go-bank/db/sqlc"
 	"github.com/nochzato/go-bank/token"
@@ -84,7 +85,7 @@ func TestGetAccountAPI(t *testing.T) {
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
 					Times(1).
-					Return(db.Account{}, sql.ErrNoRows)
+					Return(db.Account{}, pgx.ErrNoRows)
 			},
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, req, tokenMaker, authorizationTypeBearer, user.Username, time.Minute)

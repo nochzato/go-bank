@@ -2,11 +2,11 @@ package worker
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 
 	"github.com/hibiken/asynq"
+	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
 )
 
@@ -50,7 +50,7 @@ func (rtp *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Context, t
 
 	user, err := rtp.store.GetUser(ctx, payload.Username)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if err == pgx.ErrNoRows {
 			return fmt.Errorf("user doesn't exists: %w", asynq.SkipRetry)
 		}
 		return fmt.Errorf("failed to get user: %w", err)

@@ -2,11 +2,11 @@ package gapi
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	mockdb "github.com/nochzato/go-bank/db/mock"
 	db "github.com/nochzato/go-bank/db/sqlc"
 	"github.com/nochzato/go-bank/pb"
@@ -40,11 +40,11 @@ func TestUpdateUserAPI(t *testing.T) {
 			buildStubs: func(store *mockdb.MockStore) {
 				arg := db.UpdateUserParams{
 					Username: user.Username,
-					FullName: sql.NullString{
+					FullName: pgtype.Text{
 						String: newName,
 						Valid:  true,
 					},
-					Email: sql.NullString{
+					Email: pgtype.Text{
 						String: newEmail,
 						Valid:  true,
 					},
